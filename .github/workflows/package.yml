@@ -1,0 +1,39 @@
+name: Template and Package
+on:
+  push:
+    branches:
+      - main
+jobs:
+  template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: TekWizely/bash-tpl
+          ref: v0.7.1
+          path: bash-tpl
+
+      - name: Template Shemver script
+        id: template
+        run: |
+          PATH=$PATH:${GITHUB_WORKSPACE}/bash-tpl
+
+          VERSION=$(<VERSION)
+          if [[ "$GITHUB_EVENT_NAME" != "release" ]]; then
+            VERSION="${VERSION}-$(date "+%Y%m%d.%H%M%S")+git.${GITHUB_SHA:0:7}"
+          fi
+          LICENSE=$(<LICENSE)
+
+          export VERSION LICENSE
+          source <( bash-tpl src/shemver.tpl ) > bin/shemver
+          chmod 755 bin/shemver
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shemver-${{ steps.template.outputs.version }}
+          path: |
+            bin/
