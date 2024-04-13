@@ -27,6 +27,7 @@ jobs:
           LICENSE=$(<LICENSE)
 
           export VERSION LICENSE
+          mkdir -p bin/
           source <( bash-tpl src/shemver.tpl ) > bin/shemver
           chmod 755 bin/shemver
 
